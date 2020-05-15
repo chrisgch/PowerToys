@@ -9,13 +9,9 @@ namespace ColorPickerAlpha
     public partial class MagnificationWindow : Window
     {
         float magnificationFactor = 1f;
-        int width;
-        int height;
         RECT magWindowRect;
         IntPtr hwndMag;
         private IntPtr hwnd;
-        private bool initialized;
-
 
         public MagnificationWindow()
         {
@@ -41,11 +37,11 @@ namespace ColorPickerAlpha
             Closing += delegate { NativeMethods.MagUninitialize(); };
         }
 
-
         private void SetUpMagnWindow()
         {
-            width = (int)(Width / magnificationFactor);
-            height = (int)(Height / magnificationFactor);
+            magnificationFactor = 1000000;
+            int width = (int)(Width / magnificationFactor);
+            int height = (int)(Height / magnificationFactor);
             magWindowRect = new RECT();
 
             IntPtr hInst = NativeMethods.GetModuleHandle(null);
@@ -54,22 +50,22 @@ namespace ColorPickerAlpha
             hwndMag = NativeMethods.CreateWindow((int)ExtendedWindowStyles.WS_EX_CLIENTEDGE, NativeMethods.WC_MAGNIFIER,
                 "MagnifierWindow", (int)WindowStyles.WS_CHILD | (int)MagnifierStyle.MS_SHOWMAGNIFIEDCURSOR |
                 (int)WindowStyles.WS_VISIBLE,
-                magWindowRect.left, magWindowRect.top, magWindowRect.right, magWindowRect.bottom,
-                IntPtr.Zero, hwnd, hInst, IntPtr.Zero);
+                magWindowRect.left, magWindowRect.top, magWindowRect.right, magWindowRect.bottom, hwnd,
+                IntPtr.Zero, hInst, IntPtr.Zero);
 
             if (hwndMag == IntPtr.Zero)
             {
                 return;
             }
 
-            // Set the magnification factor.
+            // Set the magnification factor
             Transformation matrix = new Transformation(magnificationFactor);
             NativeMethods.MagSetWindowTransform(hwndMag, ref matrix);
         }
 
         public virtual void UpdateMaginifier(int cursorX, int cursorY)
         {
-            if ((!initialized) || (hwndMag == IntPtr.Zero))
+            if (hwndMag == IntPtr.Zero)
                 return;
 
             RECT sourceRect = new RECT();
@@ -93,12 +89,12 @@ namespace ColorPickerAlpha
             }
             sourceRect.bottom = sourceRect.top + height;
 
-            // Set the source rectangle for the magnifier control.
             NativeMethods.MagSetWindowSource(hwndMag, sourceRect);
 
             // Reclaim topmost status, to prevent unmagnified menus from remaining in view. 
-            NativeMethods.SetWindowPos(hwnd, NativeMethods.HWND_TOPMOST, 0, 0, 0, 0,
-                (int)SetWindowPosFlags.SWP_NOACTIVATE | (int)SetWindowPosFlags.SWP_NOMOVE | (int)SetWindowPosFlags.SWP_NOSIZE);
+            Topmost = true;
+            //NativeMethods.SetWindowPos(hwnd, NativeMethods.HWND_TOPMOST, 0, 0, 0, 0,
+            //    (int)SetWindowPosFlags.SWP_NOACTIVATE | (int)SetWindowPosFlags.SWP_NOMOVE | (int)SetWindowPosFlags.SWP_NOSIZE);
 
             // Force redraw.
             NativeMethods.InvalidateRect(hwndMag, IntPtr.Zero, true);
@@ -108,7 +104,7 @@ namespace ColorPickerAlpha
 
         protected virtual void ResizeMagnifier()
         {
-            if (initialized && (hwndMag != IntPtr.Zero))
+            if (hwndMag != IntPtr.Zero)
             {
                 NativeMethods.GetClientRect(hwnd, ref magWindowRect);
                 // Resize the control to fill the window.
