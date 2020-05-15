@@ -13,6 +13,7 @@ namespace ColorPickerAlpha
         bool rgbState = true;
         Color curColor;
         OverlayWindow overlayWnd;
+        MagnificationWindow magnWnd;
         private bool _pickerActive = true;
         public bool pickerActive
         {
@@ -43,6 +44,9 @@ namespace ColorPickerAlpha
                 //=> both receive mouse input when needed. Owners are below children
                 overlayWnd.Activated += delegate { Owner = overlayWnd; };
                 overlayWnd.Show();
+
+                magnWnd = new MagnificationWindow();
+                magnWnd.Show();
             };
 
             new Thread(() =>
@@ -56,6 +60,8 @@ namespace ColorPickerAlpha
 
                     Dispatcher.BeginInvoke(new Action(() =>
                     {
+                        magnWnd.UpdateVisuals(x, y);
+
                         System.Drawing.Color color = ColorPicker.GetPixelColor(x, y);
 
                         curColor = System.Windows.Media.Color.FromArgb(color.A, color.R, color.G, color.B);
