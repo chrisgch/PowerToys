@@ -49,6 +49,7 @@ namespace Microsoft.PowerToys.Settings.UI.Runner
                 });
 
                 shellPage.SetElevationStatus(Program.IsElevated);
+                shellPage.SetIsUserAnAdmin(Program.IsUserAnAdmin);
                 shellPage.Refresh();
             }
         }
